@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kino Live Lyrics</title>
+  <meta name="description" content="Follow a Kino concert in English: live, line-by-line lyric translations that work offline.">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kino Lyrics">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ───────────── Home: setup + song list ───────────── -->
+  <main id="home" class="view">
+    <header class="masthead">
+      <p class="eyebrow">Live lyrics in English</p>
+      <h1>КИНО</h1>
+      <p class="lede">Hold your phone up at the show. The app listens, works out which song is playing and scrolls the translation line by line.</p>
+    </header>
+
+    <section id="setup" class="card" aria-labelledby="setup-title">
+      <h2 id="setup-title">Before the show <span class="tag">needs internet once</span></h2>
+      <ol class="steps">
+        <li id="step-lyrics" class="step">
+          <span class="step-mark" aria-hidden="true"></span>
+          <div class="step-body">
+            <strong>Lyrics &amp; translations</strong>
+            <span class="step-note" id="lyrics-note">5 songs · tiny download</span>
+          </div>
+          <button class="btn small" id="get-lyrics">Download</button>
+        </li>
+        <li id="step-model" class="step">
+          <span class="step-mark" aria-hidden="true"></span>
+          <div class="step-body">
+            <strong>Song recognition</strong>
+            <span class="step-note" id="model-note">Lets the app follow along by ear · 77 MB, use Wi‑Fi</span>
+            <span class="bar" id="model-bar" hidden><i></i></span>
+          </div>
+          <button class="btn small" id="get-model">Download</button>
+        </li>
+      </ol>
+      <p class="hint" id="install-hint" hidden></p>
+    </section>
+
+    <section aria-labelledby="songs-title">
+      <h2 id="songs-title" class="section-title">Songs</h2>
+      <ul id="song-list" class="song-list"></ul>
+      <p class="hint">Tap a song to open it by hand — this always works, even with no signal and no microphone.</p>
+    </section>
+
+    <footer class="home-foot">
+      <button class="link" id="open-settings">Settings &amp; sharing</button>
+    </footer>
+
+    <div class="dock">
+      <button class="btn primary big" id="listen-home">
+        <span class="mic-dot" aria-hidden="true"></span>
+        <span id="listen-home-label">Start listening</span>
+      </button>
+      <p class="dock-note" id="listen-home-note" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <!-- ───────────── Live: the lyric follower ───────────── -->
+  <main id="live" class="view" hidden>
+    <header class="live-head">
+      <button class="icon-btn" id="back" aria-label="Back to song list">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="live-title">
+        <strong id="live-en"></strong>
+        <span id="live-ru" lang="ru"></span>
+      </div>
+      <button class="pill" id="listen-live" aria-pressed="false">
+        <span class="mic-dot" aria-hidden="true"></span><span id="listen-live-label">Listen</span>
+      </button>
+    </header>
+
+    <p class="banner" id="banner" aria-live="polite"></p>
+
+    <div class="lyrics" id="lyrics" lang="en"></div>
+
+    <p class="heard" id="heard" hidden></p>
+
+    <footer class="live-foot">
+      <button class="ctl" id="nudge-back" aria-label="Move lyrics back one second">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></svg><span>1s</span>
+      </button>
+      <button class="ctl" id="pause" aria-label="Pause lyrics">
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="pause-icon"><path d="M8 5v14M16 5v14"/></svg><span id="pause-label">Pause</span>
+      </button>
+      <button class="ctl" id="nudge-fwd" aria-label="Move lyrics forward one second">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6"/></svg><span>1s</span>
+      </button>
+      <button class="ctl" id="about" aria-label="About this song">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>About</span>
+      </button>
+    </footer>
+  </main>
+
+  <!-- ───────────── Sheets ───────────── -->
+  <dialog id="about-sheet" class="sheet">
+    <form method="dialog"><button class="sheet-close" aria-label="Close">✕</button></form>
+    <p class="eyebrow" id="about-meta"></p>
+    <h2 id="about-title"></h2>
+    <p class="about-ru" id="about-ru" lang="ru"></p>
+    <p id="about-text"></p>
+    <button class="btn" id="edit-song">Fix the translation…</button>
+  </dialog>
+
+  <dialog id="edit-sheet" class="sheet tall">
+    <form method="dialog"><button class="sheet-close" aria-label="Close">✕</button></form>
+    <p class="eyebrow">Edit translation</p>
+    <h2 id="edit-title"></h2>
+    <p class="hint">Translations start out machine-made. Fix any line here; it is saved on this phone. Share your fixes from Settings.</p>
+    <div id="edit-lines" class="edit-lines"></div>
+    <button class="btn primary" id="edit-save">Save</button>
+  </dialog>
+
+  <dialog id="settings-sheet" class="sheet tall">
+    <form method="dialog"><button class="sheet-close" aria-label="Close">✕</button></form>
+    <p class="eyebrow">Settings</p>
+    <h2>Display</h2>
+    <label class="row"><span>Show Russian original</span><input type="checkbox" id="opt-ru"></label>
+    <label class="row"><span>Show pronunciation (for singing along)</span><input type="checkbox" id="opt-translit"></label>
+    <label class="row"><span>Show what the app hears</span><input type="checkbox" id="opt-heard"></label>
+    <div class="row"><span>Text size</span>
+      <span class="seg" id="opt-size" role="group" aria-label="Text size">
+        <button data-size="s">S</button><button data-size="m">M</button><button data-size="l">L</button>
+      </span>
+    </div>
+    <h2>Share translations</h2>
+    <p class="hint">Export your corrected translations as a file and import it on a friend’s phone — or commit it to the app’s repository as <code>pack.json</code> so everyone gets it automatically.</p>
+    <div class="btn-row">
+      <button class="btn" id="export-pack">Export</button>
+      <button class="btn" id="import-pack">Import</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+    <h2>Reset</h2>
+    <div class="btn-row">
+      <button class="btn" id="redo-translations">Re-download lyrics</button>
+    </div>
+    <p class="hint" id="about-app"></p>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
