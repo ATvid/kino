@@ -283,7 +283,7 @@ function tick() {
 // Runs even when the song list is showing: once recognition has confirmed the
 // position, it can check less often.
 function housekeeping() {
-  listener.relaxed = tracker.inSync(nowSec());
+  listener.relaxed = tracker.inSync(nowSec()) && tracker.misses === 0;
   tick();
 }
 
