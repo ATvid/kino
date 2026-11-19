@@ -7,6 +7,8 @@ import { Tracker } from '../js/tracker.js';
 import { applyTranslationSheet, fixLookalikes, parseLrc, translationSheet } from '../js/pack.js';
 import { SONGS as CATALOG } from '../js/songs.js';
 import { translit } from '../js/translit.js';
+import { lineKey } from '../js/linekey.js';
+import { NOTES } from '../js/notes.js';
 
 const line = (t, ru) => ({ t, end: t + 4, ru });
 const SONGS = {
@@ -194,4 +196,26 @@ test('translation sheet: copy out, translate, paste back', () => {
 
   // Junk, unknown songs and out-of-range numbers are ignored.
   assert.deepEqual(applyTranslationSheet(pack, '## nope\n1. x\nhello\n## ' + a.id + '\n99. y'), { lines: 0, songs: 0 });
+});
+
+test('lineKey ignores case, punctuation and ё/е, and is stable', () => {
+  assert.equal(lineKey('Звёзды — светят, да!'), lineKey('звезды светят да'));
+  assert.notEqual(lineKey('звезды светят да'), lineKey('звезды светят нет'));
+  assert.match(lineKey('что угодно'), /^[0-9a-f]{8}$/);
+});
+
+test('meaning notes: cover every song in the catalog and contain no lyrics', () => {
+  for (const song of CATALOG) {
+    const n = NOTES[song.id];
+    assert.ok(n && Object.keys(n.g).length >= 2, `${song.id} has captions`);
+    for (const [key, text] of Object.entries(n.g)) {
+      assert.match(key, /^[0-9a-f]{8}$/);
+      assert.ok(text.length > 15 && !/[а-яё]/i.test(text), `${song.id} caption`);
+    }
+    for (const [key, [en, note]] of Object.entries(n.f)) {
+      assert.match(key, /^[0-9a-f]{8}$/);
+      assert.ok(en || note, `${song.id} line note has content`);
+      assert.ok(!/[а-яё]/i.test(`${en || ''}${note || ''}`), `${song.id} line note`);
+    }
+  }
 });

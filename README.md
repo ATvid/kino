@@ -68,6 +68,28 @@ Machine translation of song lyrics is rough. To replace it with something better
 4. To give friends the same translations: **Settings → Export**, send them the
    file, and **Import** it on their phones.
 
+## Meaning notes
+
+On top of the translation, each song carries notes written for this app:
+
+- a short caption above every verse and chorus saying what that part is about;
+- corrections for the lines machine translation gets wrong — idioms, proverbs,
+  cultural references — each with a one-line explanation.
+
+They can be switched off in Settings. A line you have edited or pasted yourself
+always wins over a built-in correction.
+
+The notes live in `notes/notes-src.json`, which refers to lines by their number
+on the translation sheet. After editing it, export a pack from the app
+(Settings → Export) and regenerate the shipped file:
+
+```bash
+node tools/build-notes.mjs path/to/pack.json
+```
+
+The generated `js/notes.js` identifies lines by fingerprint, so it contains no
+lyrics.
+
 ## How it works
 
 | Part | File | What it does |

@@ -7,6 +7,8 @@ import { buildIndex, heardWords, match } from './matcher.js';
 import { Tracker } from './tracker.js';
 import { Listener, modelIsCached, MODEL_MB } from './listener.js';
 import { translit } from './translit.js';
+import { lineKey } from './linekey.js';
+import { NOTES } from './notes.js';
 
 const $ = (id) => document.getElementById(id);
 const nowSec = () => performance.now() / 1000;
@@ -31,7 +33,17 @@ let wakeLock = null;
 let modelReady = false;
 let installPrompt = null;
 
-const prefs = { ru: true, translit: false, heard: false, size: 'm', ...readJson(PREFS_KEY) };
+const prefs = { ru: true, translit: false, heard: false, notes: true, size: 'm', ...readJson(PREFS_KEY) };
+
+/**
+ * What to show for a line: the stored translation, unless the app has a
+ * correction for it (machine translation mangles idioms). A line the user has
+ * edited or pasted themselves always wins.
+ */
+function shownLine(songId, line) {
+  const fix = NOTES[songId]?.f[lineKey(line.ru)];
+  return { en: (!line.ed && fix?.[0]) || line.en, note: fix?.[1] || '' };
+}
 
 function readJson(key) {
   try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
@@ -193,22 +205,35 @@ function renderLyrics(id) {
 
   const box = $('lyrics');
   rows = [];
+  const els = []; // everything on screen: timed rows plus untimed captions
+  const captions = NOTES[id]?.g || {};
+  const captionAt = new Map(); // line key -> index where its caption was last shown
   const addGap = (t, label) => {
     const el = document.createElement('div');
     el.className = 'gap';
     el.innerHTML = '<i></i><i></i><i></i>';
     if (label) el.append(Object.assign(document.createElement('span'), { textContent: label }));
     rows.push({ t, el });
+    els.push(el);
   };
   if (lines[0].t >= GAP_MIN) addGap(0, 'Intro');
   lines.forEach((line, i) => {
+    // "What this part means", above the line that opens a verse or chorus.
+    // (Skipped when the same opening line has only just been captioned.)
+    const key = lineKey(line.ru);
+    if (captions[key] && i - (captionAt.get(key) ?? -99) >= 6) {
+      captionAt.set(key, i);
+      els.push(Object.assign(document.createElement('p'), { className: 'gist', textContent: captions[key] }));
+    }
+    const shown = shownLine(id, line);
     const el = document.createElement('button');
     el.className = 'line';
-    const en = Object.assign(document.createElement('span'), { className: 'en', textContent: line.en || translit(line.ru) });
-    if (!line.en) en.classList.add('missing');
+    const en = Object.assign(document.createElement('span'), { className: 'en', textContent: shown.en || translit(line.ru) });
+    if (!shown.en) en.classList.add('missing');
     const ru = Object.assign(document.createElement('span'), { className: 'ru', textContent: line.ru, lang: 'ru' });
     const tr = Object.assign(document.createElement('span'), { className: 'tr', textContent: translit(line.ru), lang: 'ru-Latn' });
     el.append(en, ru, tr);
+    if (shown.note) el.append(Object.assign(document.createElement('span'), { className: 'note', textContent: shown.note }));
     el.addEventListener('click', () => {
       if (tracker.songId !== id) tracker.setSong(id, nowSec());
       tracker.seek(line.t + TAP_REACTION, nowSec());
@@ -216,11 +241,12 @@ function renderLyrics(id) {
       tick();
     });
     rows.push({ t: line.t, el, line });
+    els.push(el);
     const next = lines[i + 1];
     if (next && next.t - line.end >= GAP_MIN) addGap(line.end);
     else if (!next) addGap(line.end + 1, 'End');
   });
-  box.replaceChildren(...rows.map((r) => r.el));
+  box.replaceChildren(...els);
   box.scrollTop = 0;
 }
 
@@ -228,6 +254,8 @@ function applyPrefs() {
   document.documentElement.dataset.size = prefs.size;
   $('lyrics').classList.toggle('no-ru', !prefs.ru);
   $('lyrics').classList.toggle('no-translit', !prefs.translit);
+  $('lyrics').classList.toggle('no-notes', !prefs.notes);
+  $('opt-notes').checked = prefs.notes;
   $('heard').hidden = !prefs.heard;
   $('opt-ru').checked = prefs.ru;
   $('opt-translit').checked = prefs.translit;
@@ -378,7 +406,7 @@ function openEditor() {
   $('edit-title').textContent = song.en;
   const seen = new Map(); // repeated lines (choruses) are edited once
   pack.songs[song.id].lines.forEach((line) => {
-    if (!seen.has(line.ru)) seen.set(line.ru, line.en);
+    if (!seen.has(line.ru)) seen.set(line.ru, shownLine(song.id, line).en);
   });
   $('edit-lines').replaceChildren(...[...seen].map(([ru, en], i) => {
     const wrap = document.createElement('div');
@@ -397,7 +425,7 @@ function saveEditor() {
   let changed = false;
   for (const line of pack.songs[renderedSong].lines) {
     const v = values.get(line.ru);
-    if (v != null && v !== line.en) { line.en = v; line.ed = true; changed = true; }
+    if (v != null && v !== shownLine(renderedSong, line).en) { line.en = v; line.ed = true; changed = true; }
   }
   if (changed) {
     pack.edited = true;
@@ -501,6 +529,7 @@ function wire() {
   $('opt-ru').addEventListener('change', (e) => { prefs.ru = e.target.checked; applyPrefs(); });
   $('opt-translit').addEventListener('change', (e) => { prefs.translit = e.target.checked; applyPrefs(); });
   $('opt-heard').addEventListener('change', (e) => { prefs.heard = e.target.checked; applyPrefs(); });
+  $('opt-notes').addEventListener('change', (e) => { prefs.notes = e.target.checked; applyPrefs(); });
   $('opt-size').addEventListener('click', (e) => {
     if (e.target.dataset.size) { prefs.size = e.target.dataset.size; applyPrefs(); }
   });

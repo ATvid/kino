@@ -279,7 +279,27 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .line.current { opacity: 1; }
 .line.current .ru { color: var(--accent); }
 .line.next { opacity: .5; }
-.no-ru .line .ru, .no-translit .line .tr { display: none; }
+.line .note {
+  display: block;
+  font-size: calc(var(--lyric-size) * .54);
+  line-height: 1.35;
+  margin-top: .45em;
+  padding-left: .7em;
+  border-left: 2px solid var(--accent);
+  color: var(--text);
+  font-weight: 400;
+}
+.gist {
+  max-width: 640px;
+  margin: 1.5em auto .3em;
+  font-size: calc(var(--lyric-size) * .6);
+  line-height: 1.4;
+  color: var(--accent);
+  opacity: .75;
+  text-wrap: pretty;
+}
+.gist:first-child { margin-top: 0; }
+.no-ru .line .ru, .no-translit .line .tr, .no-notes .line .note, .no-notes .gist { display: none; }
 
 .gap {
   max-width: 640px; margin: 0 auto;

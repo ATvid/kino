@@ -9,7 +9,7 @@
 // such as GitHub Pages cannot send; they unlock multi-threaded WebAssembly,
 // which makes recognition several times faster.
 
-const CACHE = 'kino-app-v2';
+const CACHE = 'kino-app-v3';
 const SHELL = [
   './',
   'index.html',
@@ -23,6 +23,8 @@ const SHELL = [
   'js/tracker.js',
   'js/listener.js',
   'js/translit.js',
+  'js/linekey.js',
+  'js/notes.js',
   'js/asr-worker.js',
   'js/recorder-worklet.js',
   'vendor/transformers.min.js',

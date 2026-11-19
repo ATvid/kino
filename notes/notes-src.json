@@ -1,0 +1,391 @@
+{
+  "gruppa-krovi": {
+    "gist": {
+      "1": "Home comforts set against the pull of the road, with a flash of the battlefield.",
+      "7": "Chorus: a soldier with his blood type and number on his sleeve asks to be wished luck, and to come back alive.",
+      "12": "He refuses victory at any price and would rather stay with her, but a star calls him on."
+    },
+    "fix": {
+      "10": ["That I don't end up lying in this grass", "That is: that he isn't killed here."],
+      "12": ["I could pay the price, but I don't want", "Runs on into the next line: he does not want victory at any price."]
+    }
+  },
+  "zvezda": {
+    "gist": {
+      "1": "A winter city on cracked earth, two thousand years old, living under an ordinary star: the Sun.",
+      "10": "Two thousand years of war. Blood soaks into the ground, and within hours grass grows over it again.",
+      "19": "Fate favours those who live by their own laws and die young: they reach for the stars and fall, burnt by the Sun."
+    },
+    "fix": {
+      "4": ["A city caught in the noose of its roads", null],
+      "13": ["A cure for wrinkles", "Bitter joke: those who die young in war never grow old."],
+      "17": ["After three, it is alive again", "Hours, not years: one hour, two, three, and the earth has healed over."],
+      "20": ["That fate loves best", null],
+      "21": ["Those who live by different laws", null]
+    }
+  },
+  "pachka-sigaret": {
+    "gist": {
+      "1": "Far from home: a foreign sky, no familiar star, and no trace left of the roads he has walked.",
+      "5": "Chorus: with a pack of cigarettes in your pocket and a plane ticket out, today is not so bad.",
+      "9": "Nobody wants the blame or the dirty work, and without music there is no point even in going under."
+    },
+    "fix": {
+      "6": ["Then things aren't so bad, as of today", null],
+      "9": ["And nobody wanted to take the blame for nothing", "Idiom ‘guilty without guilt’: blamed though innocent. Nothing to do with wine."],
+      "10": ["And nobody wanted to do the dirty work", "Idiom: to rake hot coals out with your own hands, for someone else's benefit."],
+      "11": ["And without music, even dying in company is no good", "Twists the proverb ‘with people around, even death is fine’."]
+    }
+  },
+  "kukushka": {
+    "gist": {
+      "1": "He asks the cuckoo, the folk oracle of how long you have left, how many songs remain unwritten and what kind of life to choose.",
+      "6": "Chorus: he calls on the sun to look at him. His open palm has become a fist.",
+      "10": "Who will follow now? The strong and brave are dead, and few are left clear-headed and steady.",
+      "14": "Where has freedom gone? Life is good with it; without it there is only the whip."
+    },
+    "fix": {
+      "11": ["The strong and the brave laid down their lives on the field, in battle", "‘To lay down one's head’ means to die in battle."],
+      "14": ["Where are you now, sweet freedom?", "A folk phrase for wide-open, boundless freedom, not ‘free will’."],
+      "17": ["Answer me", null],
+      "19": ["Head and patient shoulders bowed beneath the lash", null]
+    }
+  },
+  "peremen": {
+    "gist": {
+      "1": "A cold evening: glass instead of warmth, smoke instead of fire, a red sun burning out over the city.",
+      "7": "Chorus: our hearts, eyes, laughter, tears and pulse all demand change. We are waiting for change.",
+      "11": "A kitchen at night: electric light, cigarettes, tea, the blue gas flame. That is all there is; the rest is inside us.",
+      "17": "We are neither wise nor skilled, and don't need to be to understand each other. Yet suddenly we are afraid to change anything."
+    },
+    "fix": {
+      "5": ["The day burns out with it", null],
+      "15": ["It's a simple set-up", null]
+    }
+  },
+  "spokoynaya-noch": {
+    "gist": {
+      "1": "Night falls over the rooftops. The city's lights are no match for the dark.",
+      "5": "Chorus: to those going to bed, sleep well. Good night.",
+      "7": "The moment he was waiting for: the silent speak up, and those with nothing left to wait for ride out, beyond catching."
+    },
+    "fix": {
+      "3": ["The city fires a buckshot of lights into the night", null],
+      "6": ["Good night", "Literally ‘a calm night’, the everyday Russian good-night wish."],
+      "9": ["Those with nothing left to wait for mount up", null]
+    }
+  },
+  "vosmiklassnitsa": {
+    "gist": {
+      "1": "An evening walk down an empty street: he smokes, she eats sweets. She wants the cinema, he suggests a bar.",
+      "7": "She chatters about school, a bad mark, a fight over her. He says nothing and they walk on.",
+      "12": "Her mother's lipstick, her sister's boots, dolls and balloons. She has to be home by ten."
+    },
+    "fix": {
+      "9": ["You say someone got a black eye because of you", null],
+      "10": ["I keep a meaningful silence, and we walk on", null]
+    },
+    "note": {
+      "7": "A ‘troyak’ is a 3 out of 5, roughly a C."
+    }
+  },
+  "konchitsya-leto": {
+    "gist": {
+      "1": "He writes her a letter: he can't stand what is on TV, he has no strength left, and he ignored the phone that wanted him up and running.",
+      "9": "Chorus: waiting for an answer, out of hope, and summer is nearly over.",
+      "13": "Rain for days, drinking with friends, a broken tape player. He is fine with the quiet.",
+      "21": "A building site outside, a restaurant shut for years, a tulip in a jar. Years pass like this, but maybe for a day or an hour luck will turn."
+    },
+    "fix": {
+      "4": ["About how I nearly hit the bottle, but haven't forgotten you", null],
+      "7": ["But I told it where to go", "‘Sent it’ is slang for telling someone, here the phone, to get lost."]
+    },
+    "note": {
+      "26": "The Russian Murphy's law: bread always lands butter side down."
+    }
+  },
+  "kogda-tvoya-devushka-bolna": {
+    "gist": {
+      "1": "An ordinary sunny day and everyone is cheerful except you: no appetite, no interest, off to buy wine.",
+      "9": "Chorus: the sun shines and the grass grows, but none of it is any use when your girlfriend is ill.",
+      "14": "She is in bed with honey and aspirin, and you go to the party alone."
+    },
+    "fix": {
+      "1": ["A day like any other", null],
+      "10": ["But you have no use for it", null],
+      "11": ["Nothing is right, nothing is as it should be", null],
+      "13": ["When she's ill", null],
+      "14": ["You hang your head", null]
+    }
+  },
+  "posledniy-geroy": {
+    "gist": {
+      "1": "A sleepless night in a place where he cannot sleep and does not want to live.",
+      "7": "Chorus: good morning, last hero, to you and everyone like you.",
+      "11": "He wanted to be alone and couldn't manage it. Dawn finds him at cards.",
+      "15": "Morning: the phone rings like an order to advance, and he goes where he doesn't want to go and nobody is waiting."
+    },
+    "fix": {
+      "14": ["And you meet the dawn over a game of Durak", "Durak (‘Fool’) is the most common Russian card game. He isn't acting the fool."]
+    }
+  },
+  "mama-my-vse-bolny": {
+    "gist": {
+      "1": "Seeds in the ground beg for rain; inside him everything is on fire. Act now, soon it will be too late. If the key doesn't fit, break the door down.",
+      "8": "Chorus: Mama, we are all seriously ill. We have all gone mad.",
+      "10": "A clenched fist, a blow, poison in the veins instead of blood. A shattered world where some weep, some are silent and some are glad.",
+      "16": "You have to be strong, or why exist at all. Words count for little when it comes to blows, and still you hesitate on the shore."
+    },
+    "fix": {
+      "13": ["A ruined world, bloodied heads, a loaf broken in two", null],
+      "18": ["You have to be strong, or else why exist at all", null],
+      "19": ["What will a thousand words be worth", null],
+      "20": ["When what counts is the strength of your arm?", null],
+      "21": ["And there you stand on the shore, thinking: to swim or not to swim?", "A play on Hamlet: in Russian ‘to swim’ rhymes with ‘to be’."]
+    }
+  },
+  "v-nashikh-glazakh": {
+    "gist": {
+      "1": "Everything arrived wrong: winter instead of summer, snow indoors, always waiting for tomorrow.",
+      "8": "Chorus: our eyes hold opposites, ‘forward!’ and ‘halt!’, the birth of day and the death of fire, starry night and lost paradise. So what do you want? Choose.",
+      "16": "Thirst without water, songs without words, sleep without dreams, and mourning clothes while the band plays a fanfare."
+    },
+    "fix": {
+      "22": ["We wore mourning, and the band struck up a fanfare", "A ‘tush’ is the short flourish a band plays to congratulate someone. Nothing to do with carcasses."]
+    }
+  },
+  "zakroy-za-mnoy-dver": {
+    "gist": {
+      "1": "They can't take risks: they have a home with the lights on. He doesn't know who is right. Rain waits for him, dinner for them.",
+      "7": "Chorus: close the door behind me, I'm leaving.",
+      "8": "If the cosy light ever bores you, there is room with us, and rain enough for everyone. Listen at the window and you will hear us laughing."
+    },
+    "fix": {
+      "9": ["There will be room for you with us", null]
+    }
+  },
+  "voyna": {
+    "gist": {
+      "1": "Show me anyone certain of tomorrow. Show me the dead of this road and the lone survivor of a regiment. Each of us has a part to play.",
+      "5": "Chorus: between Earth and Sky there is war, wherever you are, whatever you do.",
+      "9": "Somewhere people have an ordinary life: day and night, a son and a daughter, a world that adds up. But someone must be the wall, and someone the shoulder that shakes it."
+    },
+    "fix": {
+      "4": ["But someone must be the door, someone the lock, and someone the key to that lock", "The Russian word means both ‘lock’ and ‘castle’. Here it is the lock."]
+    }
+  },
+  "trolleybus": {
+    "gist": {
+      "1": "He takes his assigned seat, cold, beside a neighbour he has never got to know. Everyone stares hopefully at the ceiling of a trolleybus heading east.",
+      "8": "Nobody knows why or where they are going. The neighbour wants to get off but doesn't know the way.",
+      "15": "No driver, a rusted engine, and still it moves. They hold their breath, watching where a star flashed for a split second."
+    },
+    "fix": {
+      "8": ["All men are brothers, and we are the most distant of cousins", "‘Seventh water on the kissel’ is the idiom for a relative so distant it hardly counts."],
+      "12": ["And so we wonder what use there could be", null],
+      "19": ["We say nothing, but we know what got us this far:", null]
+    }
+  },
+  "alyuminievye-ogurtsy": {
+    "gist": {
+      "1": "A cheerful greeting to the boys and girls: watch me through the window, I'm planting aluminium cucumbers in a tarpaulin field.",
+      "8": "Three wise men keep telling him metal bears no fruit and it isn't worth the effort. He plants on.",
+      "13": "Pure wordplay from here: an angry white knee, buttons, clips and rivets, tractors dropping into a piggy bank."
+    },
+    "fix": {
+      "4": ["And wave your little fingers at me, yeah", null],
+      "8": ["Three wise men from Chukotka", "Chukotka is the far north-eastern tip of Russia."],
+      "11": ["The game isn't worth the candle, nor the result the work\"", null]
+    },
+    "note": {
+      "13": "Deliberate nonsense, chosen for its sound: the Russian is a tongue-twister."
+    }
+  },
+  "videli-noch": {
+    "gist": {
+      "1": "They slip out once every window has gone dark. The last tram has left and taxis cost money, so they just walk.",
+      "7": "Chorus: we saw the night, walked all night until morning.",
+      "8": "Phone home so nobody waits up, take off your shoes. Cigarettes, matches and a bottle of wine will help them wait out the night, alone together."
+    },
+    "fix": {
+      "6": ["The tape in our cassette player has run out. Rewind it", null],
+      "8": ["Step into a phone box and tell them to lock the door", "Runs on: the door of your flat. She is letting home know she won't be back tonight."],
+      "13": ["It will help us believe that everyone's asleep and it's just the two of us here", null]
+    }
+  },
+  "eto-ne-lyubov": {
+    "gist": {
+      "1": "She walks past with someone else without noticing him. He holds his breath.",
+      "5": "Chorus: …but this is not love.",
+      "6": "In the evening he stands under her window while she waters her flowers, burning until dark.",
+      "10": "Teach me everything you know, make my dreams come true. I can't wait any longer."
+    }
+  },
+  "pechal": {
+    "gist": {
+      "1": "A big city on cold ground: streetlights, traffic, and above it a blood-red moon.",
+      "5": "Chorus: the house stands, the light is on, the view is wide. So where has this sorrow come from?",
+      "8": "Alive, healthy, nothing to complain about. All around is a ‘bliss’ in which you can't see a thing. Everyone cheers and runs forward as a new day rises."
+    },
+    "fix": {
+      "4": ["And tonight the moon is red as a drop of blood", null],
+      "9": ["And, it seems, there is nothing to grieve over", "Saying: ‘to live and not grieve’, a carefree life."]
+    },
+    "note": {
+      "10": "Sarcastic rhyme in Russian: ‘blagodat’ (bliss) with ‘ne vidat’ (can't see)."
+    }
+  },
+  "stuk": {
+    "gist": {
+      "1": "Everything at home says stay: the coat on its nail, the scarf in the sleeve, gloves whispering ‘wait till morning’.",
+      "6": "Chorus: a strange knocking calls him to the road, his heart or the door. On the threshold he will say one word: believe.",
+      "10": "The station again, the sleeper train, no sleep, and through the clatter of the wheels he hears ‘farewell’."
+    },
+    "fix": {
+      "1": ["Wires for strings, current through the hands", null],
+      "2": ["The telephone, in every voice, says: “Bye!” It's time…", null],
+      "7": ["Maybe my heart, maybe a knock at the door", null],
+      "11": ["And again the attendant hands out bedding and tea", "On Russian sleeper trains a carriage attendant brings bed linen and tea."]
+    }
+  },
+  "krasno-zheltye-dni": {
+    "gist": {
+      "1": "Time to leave again: his train has waited too long, and the wind and autumn, his sister, are at the door.",
+      "5": "Chorus: after the red-and-yellow days winter will come and go. Don't be sad. He will come home, victorious or carried, rich or poor, but as soon as he can.",
+      "13": "Tell me of those worn out by the street's dramas and of the temple of broken hearts. He dreamt that love and dreams rule the world, and woke to trouble."
+    },
+    "fix": {
+      "1": ["My train has stood too long in the depot", null],
+      "7": ["Oh, my woe from wit", "‘Woe from Wit’ is Griboyedov's classic play: the trouble that comes from thinking too much. Said here tenderly."],
+      "11": ["In silver, or maybe in rags", null],
+      "20": ["I woke up and understood: trouble", null]
+    },
+    "note": {
+      "10": "The Spartan farewell: come back with your shield (victorious) or on it (dead)."
+    }
+  },
+  "aprel": {
+    "gist": {
+      "1": "Frost and ice everywhere. Snow falls like a wall all day, and behind that wall stands April.",
+      "7": "He will come bringing spring and scatter the clouds. In his eyes we will see sorrow; doors will open; and then we will see the light of the Sun.",
+      "15": "Wounded and weary, a star burning in his chest, April will die, be born again, and then come for good."
+    },
+    "fix": {
+      "2": ["Whatever you touch is ice", null],
+      "3": ["Only in my dream does the thaw drip and sing", "‘Kapel’ is the dripping of melting snow, the Russian sound of spring."],
+      "8": ["And scatter the armies of grey cloud", null],
+      "12": ["Come, sit down, no sense in standing", "Saying: ‘there is no truth in standing legs’, the usual way to offer someone a seat."]
+    }
+  },
+  "legenda": {
+    "gist": {
+      "1": "A scream caught in the throat as the moment comes. Later, someone will long remember the fighters, unsteady on their feet, wiping their swords on the grass.",
+      "9": "Crows over the field. The sky laughed, then fell silent. The survivor's hand shook, and a moment became eternity.",
+      "17": "Sunset like a funeral pyre, stars watching like wolves. The dead lie with arms flung wide; the living sleep in a heap, without dreams.",
+      "25": "‘Life’ is only a word: there is love and there is death. And who will sing if everyone sleeps? Death is worth living for; love is worth waiting for."
+    },
+    "fix": {
+      "1": ["Between the vocal cords", null],
+      "2": ["A scream is stuck like a lump in the throat", null],
+      "12": ["And then bit its tongue", "The sky: it laughed, then fell silent."],
+      "30": ["Is worth living for", null],
+      "32": ["Is worth waiting for", null]
+    }
+  },
+  "dalshe-deystvovat-budem-my": {
+    "gist": {
+      "1": "We want to see further than the house across the street. We want to live, and we have come to claim our rights.",
+      "5": "Chorus: from here on, we are the ones who act.",
+      "6": "Born in cramped flats on new estates, grown up fighting for love. The clothes you made for us no longer fit."
+    },
+    "fix": {
+      "2": ["We want to live. We are hard to kill, like cats", null],
+      "5": ["From here on, it is we who act!", null],
+      "6": ["We were born in the cramped flats of new housing estates", "The mass-built apartment blocks on the edges of Soviet cities."],
+      "10": ["And so we have come to tell you that from here on…", null]
+    }
+  },
+  "poprobuy-spet": {
+    "gist": {
+      "1": "Late winter: grey snow, the moon in meltwater. They walk on, strong, striking matches with frozen fingers to light fires.",
+      "6": "Chorus: try to sing along with me. Stand up beside me.",
+      "8": "This is our day, read in the stars. We step onto an unfinished bridge, each shouting ‘I'm ready!’",
+      "14": "The weak drink and complain they were never allowed to sing. We keep walking."
+    },
+    "fix": {
+      "7": ["Stand up beside me", null],
+      "9": ["Signs of fire and water, the gaze of the gods", null],
+      "16": ["They shout: You just try singing here!", null]
+    }
+  },
+  "mesto-dlya-shaga-vpered": {
+    "gist": {
+      "1": "A list of things that almost work: a house without keys, a sun behind clouds, a word without letters, time but no strength to wait.",
+      "9": "Chorus: white days, white mountains, white ice. All he needs is a few words and room for a step forward.",
+      "14": "More of the same: a river without a bridge, a sail without wind, paints without canvas, a wound without a bandage, and an empty hand."
+    },
+    "fix": {
+      "12": ["Is a few words", null],
+      "20": ["I have brothers, but no kin", null]
+    }
+  },
+  "muraveynik": {
+    "gist": {
+      "1": "A new day, traffic back and forth. If the sun bothers to rise, so can we.",
+      "5": "Chorus: the anthill lives. One ant breaks a leg, never mind: it heals, or it doesn't.",
+      "9": "He dislikes lies but is tired of truth, looked for shelter and didn't find it. By the look of things the share of madmen is higher than they say.",
+      "17": "We could go to war against those who are against us… Our future is fog, our past now hell, now heaven. Anyway, it's morning. Get up."
+    },
+    "fix": {
+      "3": ["If the sun can be bothered to get up", null],
+      "4": ["Then for us it's no big deal either", null],
+      "7": ["It'll heal before the wedding", "What you say to a child who has hurt themselves: it will mend long before you marry."],
+      "14": ["Of madmen at this hour", null],
+      "23": ["Our money won't fit in a pocket", null]
+    }
+  },
+  "sledi-za-soboy": {
+    "gist": {
+      "1": "Today a goodbye, tomorrow a farewell for good. Someone comes home to ruins; someone falls from a crane.",
+      "7": "Chorus: watch yourself. Be careful.",
+      "9": "Tomorrow: an incurable diagnosis, a car, a surgeon's slip, a mine in the forest.",
+      "15": "The plane overhead tonight goes down tomorrow. Somewhere: war, epidemic, blizzard, black holes."
+    },
+    "fix": {
+      "3": ["A wound in the heart will show red", "The opposite of healing: the wound opens and reddens."],
+      "13": ["A young surgeon's hand will slip", null],
+      "16": ["Tomorrow it will fall into the ocean", null]
+    }
+  },
+  "nam-s-toboy": {
+    "gist": {
+      "1": "A place where nothing is what it seems: you can't tell a face from a snout, reward from punishment, gold from copper, or why anyone should sing here.",
+      "9": "Chorus: for the two of us, the sky for a roof and the forest for a wall, away from the fouled wells. That's the plan.",
+      "14": "Stones like soap, steel like tin, truth like flattery. He doesn't like what was here, or what is.",
+      "22": "A black night, water in the river, and trouble stops being trouble. Decide: here goes. Forgive me, and goodbye."
+    },
+    "fix": {
+      "3": ["Here a pitchfork won't go into hay", null],
+      "9": ["For you and me", null],
+      "11": ["The forest will be our solid wall", null],
+      "25": ["So, here goes, come what may. Forgive me, and goodbye", "‘Byla ne byla’ is what you say before taking a leap: here goes nothing."]
+    },
+    "note": {
+      "2": "The Russian ‘carrot and stick’ is ‘gingerbread and whip’.",
+      "12": "From the proverb ‘don't spit in the well, you may need to drink from it’.",
+      "18": "From the proverb ‘you can't hide an awl in a sack’: the truth will out."
+    }
+  },
+  "pesnya-bez-slov": {
+    "gist": {
+      "1": "Everything has its due: each star its patch of sky, each thief his chance, each dog its stick and bone, each wolf its teeth.",
+      "9": "Chorus: daylight again, and the day calls him out to fight, the whole world advancing on him.",
+      "13": "Where there is a flock there is a shepherd; where there is darkness there must be light.",
+      "17": "So: will you change this world, or accept it? Stand up and step out of line? The electric chair, or a throne?"
+    },
+    "fix": {
+      "19": ["Stand up and step out of line?", "Literally ‘out of the row’: to break ranks, to be the exception."],
+      "20": ["Take a seat in the electric chair, or on a throne?", null]
+    }
+  }
+}
