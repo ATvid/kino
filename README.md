@@ -97,24 +97,34 @@ lyrics.
 | Lyrics pack | `js/pack.js` | Downloads synced lyrics + translations once, stores them on the phone |
 | Listening | `js/listener.js`, `js/recorder-worklet.js` | Microphone → rolling 15-second clips at 16 kHz |
 | Recognition | `js/asr-worker.js` | [Whisper](https://github.com/openai/whisper) (base) running on the phone via Transformers.js / WebAssembly, with per-word timestamps |
-| Matching | `js/matcher.js` | Every recognised word that occurs in a song votes for a time offset; a cluster of agreeing votes gives the song *and* the position |
+| Matching | `js/matcher.js` | Reduces lyrics and whatever was heard to their consonants, compares short overlapping pieces, and lets every shared piece vote for a time offset; a cluster of agreeing votes over the last minute or so gives the song *and* the position |
 | Tracking | `js/tracker.js` | A running clock that recognition (or a tap) re-anchors, so lyrics keep moving between recognitions |
 | Offline | `sw.js` | Service worker caches the app; the model is cached by Transformers.js |
 
-Recognition does not need to be good: a handful of correct words in 15 seconds
-is enough to pick one song out of the list and find the line, which is why a
-small on-device model is workable at all.
+Recognition does not need to be good. A small on-device model mishears sung
+words badly — vowels drift, endings change, word boundaries move — but runs of
+consonants tend to survive, and a few surviving fragments every few seconds,
+pooled over a minute, are enough to pick one song out of the list and find the
+line. To see what the model actually hears, switch on **Settings → Show what
+the app hears**.
 
 ## Limits (it is a prototype)
 
-- Recognition was tested with synthetic speech (including under heavy noise),
-  **not with real concert audio**. Loud, distorted sound will make it slower or
+- Recognition was tested with synthetic speech (including with noise much
+  louder than the voice), **not with real sung music or concert audio**. Loud, distorted sound will make it slower or
   unreliable — the tap-to-sync mode is the fallback, and it always works.
 - Line timings come from the studio recordings. If the band extends a solo, the
   lyrics run ahead until singing resumes and the app re-syncs (or you tap a line).
 - Continuous listening uses a lot of battery. Bring a power bank, or listen only
   to find the song and then switch listening off.
 - The screen is kept awake while following a song (iOS 16.4+, recent Android).
+
+## Updates
+
+Each release is one consistent set of files. A phone downloads a new release in
+the background and switches to it the next time the app is opened after being
+fully closed; the app shows a notice when one is ready. When changing any app
+file, bump `VERSION` in `sw.js` so phones pick the change up.
 
 ## Development
 

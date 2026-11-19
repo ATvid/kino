@@ -1,15 +1,22 @@
-// Service worker: makes the app open with no connection.
+// Service worker: makes the app open with no connection, and keeps its files
+// consistent with each other.
 //
-//  • App files: network first (so updates arrive), falling back to the cached
-//    copy after a short wait — at a venue with bad signal the app still opens fast.
-//  • vendor/ (the 26 MB recognition runtime) and icons: cache first.
+// Every release is a complete, versioned set of files, downloaded in one go
+// when this script changes and then served from that set only. The app never
+// runs with a new copy of one file and an old copy of another. A new release
+// takes over the next time the app is opened after it has been fully closed.
+//
+//   ► When any app file changes, bump VERSION below. Nothing else is needed.
+//
+//  • vendor/ (the 26 MB recognition runtime) is stored on first use.
 //  • The recognition model itself is cached separately by Transformers.js.
 //
 // On Chromium it also adds the cross-origin-isolation headers that static hosts
 // such as GitHub Pages cannot send; they unlock multi-threaded WebAssembly,
 // which makes recognition several times faster.
 
-const CACHE = 'kino-app-v3';
+const VERSION = 4;
+const CACHE = `kino-app-v${VERSION}`;
 const SHELL = [
   './',
   'index.html',
@@ -34,11 +41,20 @@ const SHELL = [
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
 ];
-const NETWORK_WAIT_MS = 2500;
 const ISOLATE = /Chrome\//.test(self.navigator.userAgent);
+// On a developer's own machine, always take the files from disk so edits show
+// up without bumping VERSION (the stored set is still the offline fallback).
+const DEV = ['localhost', '127.0.0.1'].includes(self.location.hostname);
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // "reload" bypasses the browser's own HTTP cache, so the set is all fresh.
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' })));
+    // First install: start working at once. Updates wait until the app is
+    // closed, so a running page is never handed files from two releases.
+    if (!self.registration.active) await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -58,32 +74,27 @@ function isolate(response) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
-async function fromNetwork(request, cache) {
+async function respond(request) {
+  const shell = await caches.open(CACHE);
+  if (DEV && !new URL(request.url).pathname.includes('/vendor/')) {
+    try {
+      const fresh = await fetch(request.url, { cache: 'no-store' });
+      if (fresh.ok) return fresh;
+    } catch { /* server not running: fall back to the stored set */ }
+  }
+  // This release's files first; then anything stored on first use (the page
+  // keeps the big runtime file in "kino-runtime").
+  const hit = (await shell.match(request, { ignoreSearch: true })) ||
+    (await caches.match(request, { ignoreSearch: true }));
+  if (hit) return hit;
   const response = await fetch(request);
-  if (response.ok) cache.put(request, response.clone());
+  if (response.ok && new URL(request.url).pathname.includes('/vendor/')) shell.put(request, response.clone());
   return response;
-}
-
-async function cacheFirst(request) {
-  // Looks in every cache: the page stores the big runtime file in "kino-runtime".
-  return (await caches.match(request, { ignoreSearch: true })) || fromNetwork(request, await caches.open(CACHE));
-}
-
-async function networkFirst(request) {
-  const cache = await caches.open(CACHE);
-  const cached = await cache.match(request, { ignoreSearch: true });
-  if (!cached) return fromNetwork(request, cache);
-  if (!self.navigator.onLine) return cached;
-  const fresh = fromNetwork(request, cache).catch(() => null);
-  const timeout = new Promise((resolve) => setTimeout(resolve, NETWORK_WAIT_MS, null));
-  const winner = await Promise.race([fresh, timeout]);
-  return winner && winner.ok ? winner : cached;
 }
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
-  const stable = url.pathname.includes('/vendor/') || url.pathname.includes('/icons/');
-  event.respondWith((stable ? cacheFirst(request) : networkFirst(request)).then(isolate));
+  event.respondWith(respond(request).then(isolate));
 });

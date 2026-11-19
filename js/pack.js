@@ -102,15 +102,30 @@ export function parseLrc(text) {
 
 // ---------- lyrics download ----------
 
-async function getJson(url, timeoutMs = 15000) {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function getJsonOnce(url, timeoutMs) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const r = await fetch(url, { signal: ctl.signal });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
     return await r.json();
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/** GET JSON, pausing and retrying when the service is busy (429 / 5xx) or the request fails. */
+async function getJson(url, timeoutMs = 15000) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await getJsonOnce(url, timeoutMs);
+    } catch (err) {
+      const giveUp = attempt >= 2 || !navigator.onLine || (err.status && err.status !== 429 && err.status < 500);
+      if (giveUp) throw err;
+      await sleep(1500 * (attempt + 1) ** 2);
+    }
   }
 }
 
@@ -132,20 +147,10 @@ async function fetchLyrics(song) {
 
 // ---------- translation ----------
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 async function googleTranslate(text) {
   const q = new URLSearchParams({ client: 'gtx', sl: 'ru', tl: 'en', dt: 't', q: text });
-  // This free endpoint occasionally refuses a request; a short pause usually fixes it.
-  for (let attempt = 0; ; attempt++) {
-    try {
-      const data = await getJson(`https://translate.googleapis.com/translate_a/single?${q}`);
-      return data[0].map((seg) => seg[0]).join('');
-    } catch (err) {
-      if (attempt >= 2 || !navigator.onLine) throw err;
-      await sleep(700 * (attempt + 1));
-    }
-  }
+  const data = await getJson(`https://translate.googleapis.com/translate_a/single?${q}`);
+  return data[0].map((seg) => seg[0]).join('');
 }
 
 async function myMemoryTranslate(text) {

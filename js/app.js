@@ -3,7 +3,7 @@ import {
   loadPack, savePack, loadBundledPack, buildPack, packIsComplete, missingTranslations, validPack,
   translationSheet, applyTranslationSheet,
 } from './pack.js';
-import { buildIndex, heardWords, match } from './matcher.js';
+import { buildIndex, Evidence, match } from './matcher.js';
 import { Tracker } from './tracker.js';
 import { Listener, modelIsCached, MODEL_MB } from './listener.js';
 import { translit } from './translit.js';
@@ -25,6 +25,7 @@ let pack = loadPack();
 let index = null;
 let tracker = new Tracker({});
 const listener = new Listener();
+const evidence = new Evidence(); // what has been heard over the last minute or so
 let rows = []; // rendered rows of the open song: { t, el, line? }
 let renderedSong = null;
 let currentRow = -1;
@@ -318,12 +319,12 @@ function housekeeping() {
 
 function onHeard({ text, chunks, clipStart, seconds, ms }) {
   if (!index) return;
-  const words = heardWords(chunks, seconds);
-  const results = match(index, words);
-  const action = tracker.onMatch(results, clipStart, nowSec());
+  evidence.add(chunks, clipStart, seconds);
+  const results = match(index, evidence);
+  const action = tracker.onMatch(results, nowSec());
   $('heard').textContent = `Heard (${(ms / 1000).toFixed(1)}s): ${text.trim() || '—'}`;
   console.debug('[kino] heard', JSON.stringify({
-    chunks, clipStart: +clipStart.toFixed(2), seconds, action,
+    chunks, clipStart: +clipStart.toFixed(2), seconds, ms: Math.round(ms), action,
     position: tracker.position(nowSec()), top: results.slice(0, 2).map((r) => ({ id: r.id, peaks: r.peaks.slice(0, 2) })),
   }));
   if (action.type === 'identify' || action.type === 'switch') {
@@ -360,6 +361,7 @@ function updateListenUi() {
 async function toggleListening() {
   if (listener.listening) {
     listener.stop();
+    evidence.clear();
   } else {
     if (!packIsComplete(pack)) toast('Download the lyrics first so there is something to match against.');
     try {
@@ -584,7 +586,20 @@ async function init() {
   $('about-app').textContent = 'Lyrics: lrclib.net · Translation: machine-made, editable · Recognition: Whisper, running on this phone.';
   setInterval(housekeeping, 120);
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // A new release is downloaded in the background and takes over once the
+      // app has been fully closed; say so, or it looks like nothing happened.
+      reg.addEventListener('updatefound', () => {
+        const next = reg.installing;
+        next?.addEventListener('statechange', () => {
+          if (next.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('Update downloaded. Close the app completely and open it again to use it.', 8000);
+          }
+        });
+      });
+    }).catch(() => {});
+  }
   navigator.storage?.persist?.().catch(() => {});
 
   modelIsCached().then((cached) => {

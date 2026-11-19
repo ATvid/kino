@@ -2,7 +2,8 @@
 // These tests use made-up Russian sentences, not real song lyrics.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildIndex, heardWords, match, normalizeWords, wordSimilarity } from '../js/matcher.js';
+import fs from 'node:fs';
+import { buildIndex, Evidence, match, normalizeWords, skeleton } from '../js/matcher.js';
 import { Tracker } from '../js/tracker.js';
 import { applyTranslationSheet, fixLookalikes, parseLrc, translationSheet } from '../js/pack.js';
 import { SONGS as CATALOG } from '../js/songs.js';
@@ -37,87 +38,143 @@ const SONGS = {
 };
 const index = buildIndex(Object.entries(SONGS).map(([id, s]) => ({ id, ...s })));
 
-/** Simulate the recogniser hearing some lines, starting `clipSongStart` seconds into the song. */
-function hear(songId, clipSongStart, clipSeconds, mangle = (w) => w) {
+/**
+ * What a recogniser might return for a clip that starts `songStart` seconds
+ * into the song: one chunk per word, with times relative to the clip.
+ * `keep` picks which words were heard at all; `mangle` garbles them.
+ */
+function clip(songId, songStart, seconds, { keep = () => true, mangle = (w) => w } = {}) {
   const chunks = [];
+  let n = 0;
   for (const l of SONGS[songId].lines) {
     const ws = l.ru.split(/\s+/);
     ws.forEach((w, i) => {
-      const t = l.t + (i * 3) / ws.length - clipSongStart;
-      if (t >= 0 && t < clipSeconds) chunks.push({ text: ` ${mangle(w)}`, timestamp: [t, t + 0.4] });
+      const t = l.t + (i * 3) / ws.length - songStart;
+      if (t >= 0 && t < seconds && keep(n++, l)) chunks.push({ text: ` ${mangle(w)}`, timestamp: [t, t + 0.4] });
     });
   }
-  return heardWords(chunks, clipSeconds);
+  return chunks;
+}
+
+/** Evidence from a single clip heard at wall time `wall`. */
+function heard(songId, songStart, seconds, wall, opts) {
+  const ev = new Evidence();
+  ev.add(clip(songId, songStart, seconds, opts), wall, seconds);
+  return ev;
 }
 
 test('normalizeWords strips punctuation and folds ё', () => {
   assert.deepEqual(normalizeWords('Звёзды — светят, да!'), ['звезды', 'светят', 'да']);
 });
 
-test('wordSimilarity tolerates endings and small errors, not different words', () => {
-  assert.equal(wordSimilarity('корабль', 'корабль'), 1);
-  assert.ok(wordSimilarity('корабля', 'корабль') > 0); // inflection
-  assert.ok(wordSimilarity('туманы', 'туманны') > 0); // recogniser slip
-  assert.ok(wordSimilarity('написано', 'ненаписанных') > 0); // same stem
-  assert.equal(wordSimilarity('паром', 'город'), 0);
-  assert.equal(wordSimilarity('на', 'но'), 0); // short words must be exact
+test('skeleton keeps consonants and merges ones that get confused', () => {
+  assert.equal(skeleton('корабль'), 'krpl');
+  assert.equal(skeleton('гараж'), skeleton('караш')); // voiced / unvoiced
+  // misheard vowels and a moved word boundary leave the skeleton untouched
+  assert.equal(skeleton('туманы') + skeleton('дожди'), skeleton('томан') + skeleton('и') + skeleton('дажди'));
 });
 
 test('identifies the right song and position from a clean clip', () => {
-  const results = match(index, hear('river', 12, 15));
+  const results = match(index, heard('river', 12, 15, 100));
   assert.equal(results[0].id, 'river');
-  assert.ok(Math.abs(results[0].peaks[0].offset - 12) < 1.5, `offset ${results[0].peaks[0].offset}`);
+  // song time 12 at wall time 100 → offset −88
+  assert.ok(Math.abs(results[0].peaks[0].offset - -88) < 1.5, `offset ${results[0].peaks[0].offset}`);
+  assert.ok(results[0].peaks[0].recent > 0);
 });
 
-test('still works when half the words are garbled', () => {
-  let n = 0;
-  const results = match(index, hear('city', 6, 15, (w) => (n++ % 2 ? 'бубубу' : w)));
+test('still works when vowels are wrong and words run together', () => {
+  const mangle = (w) => w.toLowerCase().replace(/[аеёиоуыэюя]/g, 'а');
+  const chunks = clip('city', 6, 15, { mangle });
+  // glue pairs of words together, as recognisers do
+  const glued = [];
+  for (let i = 0; i < chunks.length; i += 2) {
+    const a = chunks[i];
+    const b = chunks[i + 1];
+    glued.push(b ? { text: a.text + b.text.trim(), timestamp: [a.timestamp[0], b.timestamp[1]] } : a);
+  }
+  const ev = new Evidence();
+  ev.add(glued, 50, 15);
+  const results = match(index, ev);
   assert.equal(results[0].id, 'city');
-  assert.ok(Math.abs(results[0].peaks[0].offset - 6) < 1.5);
+  assert.ok(Math.abs(results[0].peaks[0].offset - -44) < 2, `offset ${results[0].peaks[0].offset}`);
 });
 
 test('unrelated speech matches nothing convincingly', () => {
-  const heard = heardWords([{ text: 'Спасибо большое всем кто пришёл сегодня вечером', timestamp: [0, 5] }], 15);
-  const results = match(index, heard);
-  assert.ok((results[0].peaks[0]?.score ?? 0) < 2);
+  const ev = new Evidence();
+  ev.add([{ text: 'Спасибо большое всем кто пришёл сегодня вечером', timestamp: [0, 5] }], 0, 15);
+  const results = match(index, ev);
+  assert.ok((results[0].peaks[0]?.score ?? 0) < 3, `score ${results[0].peaks[0]?.score}`);
+});
+
+test('evidence adds up across passes when each one caught very little', () => {
+  // Each pass catches just the first two words of one line.
+  const ev = new Evidence();
+  const tracker = new Tracker(SONGS);
+  let identified = null;
+  [[10, 0], [14, 1], [18, 2], [22, 3]].forEach(([songStart, lineNo], pass) => {
+    const wall = 100 + (songStart - 10); // the song keeps playing in real time
+    const only = SONGS.river.lines[lineNo];
+    let taken = 0;
+    ev.add(clip('river', songStart, 4, { keep: (n, l) => l === only && taken++ < 2 }), wall, 4);
+    const a = tracker.onMatch(match(index, ev), wall + 5);
+    if (a.type === 'identify' && identified == null) identified = pass;
+  });
+  assert.ok(identified != null, 'identified from accumulated evidence');
+  assert.ok(identified >= 1, 'not from the first fragment alone');
+  assert.equal(tracker.songId, 'river');
+  assert.ok(Math.abs(tracker.position(130) - 40) < 2, `pos ${tracker.position(130)}`);
 });
 
 test('tracker: identifies, follows, and resolves a repeated chorus by position', () => {
   const tr = new Tracker(SONGS);
-  // Listening from song time 12; wall clock == clip clock here, clip starts at wall 100.
-  let a = tr.onMatch(match(index, hear('river', 12, 15)), 100, 115);
+  const ev = new Evidence();
+  // Song time 12 at wall time 100.
+  ev.add(clip('river', 12, 15), 100, 15);
+  let a = tr.onMatch(match(index, ev), 115);
   assert.equal(a.type, 'identify');
   assert.equal(tr.songId, 'river');
   assert.ok(Math.abs(tr.position(115) - 27) < 1.5, `pos ${tr.position(115)}`);
 
-  // 55 s later the second chorus (song time 80) is playing. Its words also match
+  // Later the second chorus (song time 80) is playing. Its words also match
   // the first chorus at 40; the tracker must pick the one that agrees with its clock.
-  a = tr.onMatch(match(index, hear('river', 78, 12)), 166, 178);
+  ev.add(clip('river', 78, 12), 166, 12);
+  a = tr.onMatch(match(index, ev), 178);
   assert.equal(a.type, 'sync');
   assert.ok(Math.abs(tr.position(178) - 90) < 2, `pos ${tr.position(178)}`);
 });
 
 test('tracker: switches when another song takes over', () => {
   const tr = new Tracker(SONGS);
-  tr.onMatch(match(index, hear('river', 12, 15)), 100, 115);
-  const other = match(index, hear('city', 6, 15));
-  // First clip of the new song: overwhelming evidence switches at once.
-  const a = tr.onMatch(other, 200, 215);
-  assert.equal(a.type, 'switch');
+  const ev = new Evidence();
+  ev.add(clip('river', 12, 15), 100, 15);
+  tr.onMatch(match(index, ev), 115);
+  // The other song starts; within a couple of passes the tracker follows.
+  let switched = false;
+  for (const [songStart, wall] of [[6, 130], [10, 134], [14, 138]]) {
+    ev.add(clip('city', songStart, 8), wall, 8);
+    if (tr.onMatch(match(index, ev), wall + 9).type === 'switch') switched = true;
+  }
+  assert.ok(switched);
   assert.equal(tr.songId, 'city');
-  assert.ok(Math.abs(tr.position(215) - 21) < 1.5);
+  assert.ok(Math.abs(tr.position(150) - 26) < 1.5, `pos ${tr.position(150)}`);
 });
 
 test('tracker: a manual choice is not overridden straight away', () => {
   const tr = new Tracker(SONGS);
   tr.setSong('city', 100);
   tr.seek(8, 100);
-  const a = tr.onMatch(match(index, hear('river', 12, 15)), 101, 116);
+  const ev = new Evidence();
+  ev.add(clip('river', 12, 15), 101, 15);
+  const a = tr.onMatch(match(index, ev), 116);
   assert.equal(a.type, 'none');
   assert.equal(tr.songId, 'city');
-  // …but once the hold has passed and the evidence repeats, it gives way.
-  const b = tr.onMatch(match(index, hear('river', 40, 15)), 140, 155);
-  assert.equal(b.type, 'switch');
+  // …but once the hold has passed and the evidence keeps coming, it gives way.
+  let switched = false;
+  for (const [songStart, wall] of [[40, 129], [44, 133], [48, 137]]) {
+    ev.add(clip('river', songStart, 8), wall, 8);
+    if (tr.onMatch(match(index, ev), wall + 9).type === 'switch') switched = true;
+  }
+  assert.ok(switched);
 });
 
 test('tracker: tap-to-seek, nudge, pause and resume', () => {
@@ -218,4 +275,14 @@ test('meaning notes: cover every song in the catalog and contain no lyrics', () 
       assert.ok(!/[а-яё]/i.test(`${en || ''}${note || ''}`), `${song.id} line note`);
     }
   }
+});
+
+test('service worker: every app file is part of the offline set', () => {
+  const sw = fs.readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  const listed = new Set([...sw.matchAll(/'((?:js|vendor|icons)\/[^']+|[a-z.]+\.(?:html|css|json|webmanifest))'/g)].map((m) => m[1]));
+  for (const f of fs.readdirSync(new URL('../js/', import.meta.url))) {
+    assert.ok(listed.has(`js/${f}`), `js/${f} is missing from SHELL in sw.js`);
+  }
+  for (const f of ['index.html', 'styles.css', 'manifest.webmanifest', 'pack.json']) assert.ok(listed.has(f), f);
+  assert.match(sw, /const VERSION = \d+;/);
 });
