@@ -1,6 +1,7 @@
 import { SONGS, songById } from './songs.js';
 import {
   loadPack, savePack, loadBundledPack, buildPack, packIsComplete, missingTranslations, validPack,
+  translationSheet, applyTranslationSheet,
 } from './pack.js';
 import { buildIndex, heardWords, match } from './matcher.js';
 import { Tracker } from './tracker.js';
@@ -75,7 +76,7 @@ function renderLyricsStep() {
     if (missing) setStep('step-lyrics', 'failed', `Lyrics saved, but ${missing} lines still need a translation`, 'Retry');
     else setStep('step-lyrics', 'done', `${SONGS.length} songs saved on this phone`, null);
   } else {
-    setStep('step-lyrics', '', `${SONGS.length} songs · tiny download`, 'Download');
+    setStep('step-lyrics', '', `${SONGS.length} songs · small download`, 'Download');
   }
   $('setup').classList.toggle('done', packIsComplete(pack) && !missingTranslations(pack) && modelReady);
 }
@@ -122,8 +123,8 @@ function renderHome() {
 
 async function downloadLyrics() {
   setStep('step-lyrics', 'working', 'Downloading…', 'Download');
-  const { pack: built, errors } = await buildPack(pack, ({ index: i, total, song }) => {
-    if (song) setStep('step-lyrics', 'working', `Downloading ${i + 1} of ${total}: ${song.en}…`, 'Download');
+  const { pack: built, errors } = await buildPack(pack, ({ done, total }) => {
+    setStep('step-lyrics', 'working', `Downloading… ${done} of ${total} songs`, 'Download');
   });
   setPack(Object.keys(built.songs).length ? built : null);
   if (errors.length) {
@@ -372,7 +373,7 @@ function openAbout() {
 }
 
 function openEditor() {
-  $('about-sheet').close();
+  if ($('about-sheet').open) $('about-sheet').close();
   const song = songById(renderedSong);
   $('edit-title').textContent = song.en;
   const seen = new Map(); // repeated lines (choruses) are edited once
@@ -388,7 +389,7 @@ function openEditor() {
     wrap.append(label, input);
     return wrap;
   }));
-  $('edit-sheet').showModal();
+  if (!$('edit-sheet').open) $('edit-sheet').showModal();
 }
 
 function saveEditor() {
@@ -396,7 +397,7 @@ function saveEditor() {
   let changed = false;
   for (const line of pack.songs[renderedSong].lines) {
     const v = values.get(line.ru);
-    if (v != null && v !== line.en) { line.en = v; changed = true; }
+    if (v != null && v !== line.en) { line.en = v; line.ed = true; changed = true; }
   }
   if (changed) {
     pack.edited = true;
@@ -407,6 +408,43 @@ function saveEditor() {
     toast('Translation saved on this phone.');
   }
   $('edit-sheet').close();
+}
+
+// ---- translation sheet: copy the lyrics out, paste better translations back ----
+
+let sheetScope = null; // null = all songs, or [songId]
+
+async function copySheet(songIds) {
+  if (!pack || !Object.keys(pack.songs).length) return toast('Download the lyrics first.');
+  const text = translationSheet(pack, songIds);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(songIds ? 'Song copied. Paste it wherever it will be translated.' : 'All songs copied. Paste them wherever they will be translated.', 4500);
+  } catch {
+    // Clipboard blocked: show the text so it can be copied by hand.
+    openPasteSheet(songIds, text);
+    $('paste-text').select();
+  }
+}
+
+function openPasteSheet(songIds, prefill = '') {
+  sheetScope = songIds;
+  $('paste-text').value = prefill;
+  $('paste-sheet').showModal();
+}
+
+function applyPastedSheet() {
+  const text = $('paste-text').value;
+  if (!text.trim()) return toast('Paste the translated sheet into the box first.');
+  const { lines, songs } = applyTranslationSheet(pack, text);
+  if (!lines) {
+    return toast('No translated lines found. Keep the “## song” headers and the line numbers when translating.', 6000);
+  }
+  savePack(pack);
+  setPack(pack);
+  $('paste-sheet').close();
+  if ($('edit-sheet').open) openEditor();
+  toast(`Updated ${lines} line${lines === 1 ? '' : 's'} in ${songs} song${songs === 1 ? '' : 's'}.`);
 }
 
 async function exportPack() {
@@ -466,6 +504,11 @@ function wire() {
   $('opt-size').addEventListener('click', (e) => {
     if (e.target.dataset.size) { prefs.size = e.target.dataset.size; applyPrefs(); }
   });
+  $('copy-sheet').addEventListener('click', () => copySheet(null));
+  $('paste-sheet-open').addEventListener('click', () => openPasteSheet(null));
+  $('copy-song').addEventListener('click', () => copySheet([renderedSong]));
+  $('paste-song').addEventListener('click', () => openPasteSheet([renderedSong]));
+  $('paste-apply').addEventListener('click', applyPastedSheet);
   $('export-pack').addEventListener('click', exportPack);
   $('import-pack').addEventListener('click', () => $('import-file').click());
   $('import-file').addEventListener('change', (e) => {

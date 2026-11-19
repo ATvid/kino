@@ -4,7 +4,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildIndex, heardWords, match, normalizeWords, wordSimilarity } from '../js/matcher.js';
 import { Tracker } from '../js/tracker.js';
-import { fixLookalikes, parseLrc } from '../js/pack.js';
+import { applyTranslationSheet, fixLookalikes, parseLrc, translationSheet } from '../js/pack.js';
+import { SONGS as CATALOG } from '../js/songs.js';
 import { translit } from '../js/translit.js';
 
 const line = (t, ru) => ({ t, end: t + 4, ru });
@@ -158,4 +159,39 @@ test('fixLookalikes repairs Latin letters typed inside Russian words only', () =
 test('translit is readable for English speakers', () => {
   assert.equal(translit('Звезда по имени Солнце'), 'Zvezda po imeni Solntse');
   assert.equal(translit('Ёлка и её друзья'), 'Yolka i yeyo druz’ya');
+});
+
+test('catalog: ids and lyric records are unique, every song has a note', () => {
+  assert.equal(new Set(CATALOG.map((s) => s.id)).size, CATALOG.length);
+  assert.equal(new Set(CATALOG.map((s) => s.lrclib)).size, CATALOG.length);
+  for (const s of CATALOG) assert.ok(s.ru && s.en && s.about.length > 40 && s.duration > 60, s.id);
+});
+
+test('translation sheet: copy out, translate, paste back', () => {
+  const [a, b] = CATALOG;
+  const mk = (rus) => ({ lines: rus.map((ru, i) => ({ t: i * 4, end: i * 4 + 4, ru, en: `machine ${i}` })) });
+  const pack = { v: 1, edited: false, songs: {
+    [a.id]: mk(['Первая строка', 'Припев раз', 'Вторая строка', 'Припев раз']),
+    [b.id]: mk(['Другая песня']),
+  } };
+
+  const sheet = translationSheet(pack);
+  assert.match(sheet, new RegExp(`## ${a.id} \\|`));
+  assert.match(sheet, /\n1\. Первая строка\n2\. Припев раз\n3\. Вторая строка\n/); // chorus listed once
+  assert.equal(translationSheet(pack, [b.id]).includes(a.id), false);
+
+  // Translator filled in song A fully and left song B in Russian.
+  const filled = sheet
+    .replace('1. Первая строка', '1. First line')
+    .replace('2. Припев раз', '2) Chorus, once')
+    .replace('3. Вторая строка', '3. Second line');
+  const result = applyTranslationSheet(pack, filled);
+  assert.deepEqual(result, { lines: 4, songs: 1 });
+  assert.deepEqual(pack.songs[a.id].lines.map((l) => l.en), ['First line', 'Chorus, once', 'Second line', 'Chorus, once']);
+  assert.ok(pack.songs[a.id].lines.every((l) => l.ed));
+  assert.equal(pack.songs[b.id].lines[0].en, 'machine 0'); // untouched
+  assert.equal(pack.edited, true);
+
+  // Junk, unknown songs and out-of-range numbers are ignored.
+  assert.deepEqual(applyTranslationSheet(pack, '## nope\n1. x\nhello\n## ' + a.id + '\n99. y'), { lines: 0, songs: 0 });
 });

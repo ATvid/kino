@@ -194,9 +194,8 @@ export async function translateLines(lines) {
 export async function buildPack(existing, onProgress = () => {}) {
   const pack = existing && validPack(existing) ? existing : { v: 1, updated: 0, edited: false, songs: {} };
   const errors = [];
-  for (let i = 0; i < SONGS.length; i++) {
-    const song = SONGS[i];
-    onProgress({ index: i, total: SONGS.length, song });
+  let done = 0;
+  const one = async (song) => {
     try {
       let entry = pack.songs[song.id];
       if (!entry?.lines?.length) {
@@ -215,7 +214,73 @@ export async function buildPack(existing, onProgress = () => {}) {
     } catch (e) {
       errors.push(`${song.en}: ${e.message || e}`);
     }
-  }
-  onProgress({ index: SONGS.length, total: SONGS.length });
+    onProgress({ done: ++done, total: SONGS.length, song });
+  };
+  // A few songs at a time: quick, without hammering the free services.
+  const queue = SONGS.slice();
+  await Promise.all(Array.from({ length: 4 }, async () => {
+    while (queue.length) await one(queue.shift());
+  }));
   return { pack, errors };
+}
+
+// ---------- translation sheet ----------
+//
+// A plain-text way to get better translations in: every song's distinct lines,
+// numbered. Someone (or something) who translates well writes an English line
+// after each number, and the result is pasted back. Line numbers keep it aligned.
+
+/** Distinct Russian lines of a song, in order of first appearance. */
+const distinctLines = (entry) => [...new Set(entry.lines.map((l) => l.ru))];
+
+export function translationSheet(pack, songIds) {
+  const parts = [
+    'KINO LYRICS — TRANSLATION SHEET',
+    'Replace each numbered Russian line with its English translation.',
+    'Keep the "##" headers and the numbers exactly as they are, one line per number.',
+    'Lines starting with "//" are background notes; leave or delete them.',
+  ];
+  for (const song of SONGS) {
+    const entry = pack.songs[song.id];
+    if (!entry?.lines?.length || (songIds && !songIds.includes(song.id))) continue;
+    parts.push('', `## ${song.id} | ${song.ru} (${song.en}, ${song.year})`, `// ${song.about}`);
+    distinctLines(entry).forEach((ru, i) => parts.push(`${i + 1}. ${ru}`));
+  }
+  return parts.join('\n');
+}
+
+/**
+ * Apply a filled-in translation sheet. Lines still in Russian are ignored, so
+ * a partly translated sheet is fine.
+ * @returns {{lines:number, songs:number}} how much changed
+ */
+export function applyTranslationSheet(pack, text) {
+  let entry = null;
+  let distinct = [];
+  let lines = 0;
+  const songs = new Set();
+  for (const raw of text.split(/\r?\n/)) {
+    const header = raw.match(/^\s*#+\s*([a-z0-9-]+)/i);
+    if (header) {
+      const id = header[1].toLowerCase();
+      entry = pack.songs[id] || null;
+      distinct = entry ? distinctLines(entry) : [];
+      continue;
+    }
+    const m = raw.match(/^\s*(\d+)\s*[.):]\s*(.+?)\s*$/);
+    if (!m || !entry) continue;
+    const ru = distinct[+m[1] - 1];
+    const en = m[2];
+    if (ru == null || isCyrillic(en)) continue;
+    for (const line of entry.lines) {
+      if (line.ru === ru && line.en !== en) {
+        line.en = en;
+        line.ed = true;
+        lines++;
+        songs.add(entry);
+      }
+    }
+  }
+  if (lines) pack.edited = true;
+  return { lines, songs: songs.size };
 }

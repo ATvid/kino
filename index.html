@@ -33,7 +33,7 @@
           <span class="step-mark" aria-hidden="true"></span>
           <div class="step-body">
             <strong>Lyrics &amp; translations</strong>
-            <span class="step-note" id="lyrics-note">5 songs · tiny download</span>
+            <span class="step-note" id="lyrics-note">30 songs · small download</span>
           </div>
           <button class="btn small" id="get-lyrics">Download</button>
         </li>
@@ -120,7 +120,11 @@
     <form method="dialog"><button class="sheet-close" aria-label="Close">✕</button></form>
     <p class="eyebrow">Edit translation</p>
     <h2 id="edit-title"></h2>
-    <p class="hint">Translations start out machine-made. Fix any line here; it is saved on this phone. Share your fixes from Settings.</p>
+    <p class="hint">Translations start out machine-made. Fix any line here, or copy the whole song out, have it translated properly, and paste the result back.</p>
+    <div class="btn-row">
+      <button class="btn small" id="copy-song">Copy song</button>
+      <button class="btn small" id="paste-song">Paste translation</button>
+    </div>
     <div id="edit-lines" class="edit-lines"></div>
     <button class="btn primary" id="edit-save">Save</button>
   </dialog>
@@ -137,8 +141,14 @@
         <button data-size="s">S</button><button data-size="m">M</button><button data-size="l">L</button>
       </span>
     </div>
-    <h2>Share translations</h2>
-    <p class="hint">Export your corrected translations as a file and import it on a friend’s phone — or commit it to the app’s repository as <code>pack.json</code> so everyone gets it automatically.</p>
+    <h2>Better translations</h2>
+    <p class="hint">The built-in translations are machine-made. To replace them, copy the lyric sheet, have it translated by a person or a tool you trust, then paste the result back — the line numbers keep everything aligned.</p>
+    <div class="btn-row">
+      <button class="btn" id="copy-sheet">Copy all lyrics</button>
+      <button class="btn" id="paste-sheet-open">Paste translation</button>
+    </div>
+    <h2>Share with friends</h2>
+    <p class="hint">Export the lyrics and translations on this phone as a file, send it to a friend, and import it on their phone.</p>
     <div class="btn-row">
       <button class="btn" id="export-pack">Export</button>
       <button class="btn" id="import-pack">Import</button>
@@ -149,6 +159,15 @@
       <button class="btn" id="redo-translations">Re-download lyrics</button>
     </div>
     <p class="hint" id="about-app"></p>
+  </dialog>
+
+  <dialog id="paste-sheet" class="sheet tall">
+    <form method="dialog"><button class="sheet-close" aria-label="Close">✕</button></form>
+    <p class="eyebrow">Translation sheet</p>
+    <h2>Paste translation</h2>
+    <p class="hint">Paste the translated sheet here. Lines that are still in Russian are skipped, so a partly finished sheet is fine.</p>
+    <textarea id="paste-text" spellcheck="false" autocomplete="off" aria-label="Translated lyric sheet"></textarea>
+    <button class="btn primary" id="paste-apply">Apply</button>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>

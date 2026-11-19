@@ -40,25 +40,33 @@ The app is a folder of static files; it needs to be served over **HTTPS**
 - **Any static host** (Netlify, Cloudflare Pages, …): upload the folder as is.
   There is no build step.
 
+## Songs
+
+Thirty of Kino's best-known songs are in the catalog (`js/songs.js`), each with
+a short "about this song" note. To add another, append an entry: titles, the
+note, and the lrclib.net record to use. Check that the record is in Cyrillic and
+time-synced — the app rejects romanised ones. Phones fetch new songs the next
+time they are online.
+
 ## Translations
 
-Lyrics are **not stored in this repository**. Each phone downloads the
-time-synced Russian lyrics from [lrclib.net](https://lrclib.net) and a machine
-translation, then keeps them on the device.
+Lyrics and their translations are **not stored in this repository** — the songs
+are under copyright. Each phone downloads the time-synced Russian lyrics from
+[lrclib.net](https://lrclib.net) plus a machine translation, and keeps them on
+the device.
 
-Machine translation of song lyrics is rough. To improve it:
+Machine translation of song lyrics is rough. To replace it with something better:
 
-1. Open a song → **About** → **Fix the translation…** and edit any line.
-2. **Settings → Export** saves your version as `pack.json`.
-3. Either **Import** that file on a friend's phone, or replace the `pack.json`
-   in this folder with it and redeploy — then every phone picks it up
-   automatically (unless that phone has its own edits).
-
-## Adding songs
-
-Add an entry to `js/songs.js` (titles, a short "about" text, and the lrclib.net
-record to use). Check that the record is in Cyrillic and time-synced — the app
-rejects romanised ones. Phones fetch the new song the next time they are online.
+1. **Settings → Copy all lyrics** puts a numbered sheet of every song on the
+   clipboard (or **Copy song** in a song's editor, for one at a time).
+2. Have the sheet translated — by a person, or by whatever tool you trust.
+   Only the text after each number changes; the `## song` headers and the
+   numbers stay.
+3. **Paste translation** and **Apply**. Lines still in Russian are skipped, so
+   a half-finished sheet is fine. Single lines can also be fixed by hand in the
+   editor (song → **About** → **Fix the translation…**).
+4. To give friends the same translations: **Settings → Export**, send them the
+   file, and **Import** it on their phones.
 
 ## How it works
 
